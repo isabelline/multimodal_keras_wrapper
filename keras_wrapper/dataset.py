@@ -705,7 +705,7 @@ class Dataset(object):
                                         'video', 'video-features',
                                         'text', 'text-features',
                                         'categorical', 'categorical_raw', 'binary',
-                                        'id', 'ghost', 'file-name']
+                                        'id', 'ghost', 'file-name', 'np_array']
         self.__accepted_types_outputs = ['categorical', 'binary',
                                          'real',
                                          'text', 'dense-text', 'text-features',  # Dense text is just like text,
@@ -1058,6 +1058,8 @@ class Dataset(object):
             data = self.preprocessIDs(path_list, id, set_name)
         elif type == 'ghost':
             data = []
+        elif type =="np_array":
+            data = self.preprocessNPArray(path_list,id, set_name)
 
         if isinstance(repeat_set, (np.ndarray, np.generic, list)) or repeat_set > 1:
             data = list(np.repeat(data, repeat_set))
@@ -2874,6 +2876,32 @@ class Dataset(object):
                 V[enum, (j + offset_j) * 3:(j + offset_j + 1) * 3] = images[j]
 
         return V
+    # ------------------------------------------------------- #
+    #       TYPE 'np_array' SPECIFIC FUNCTIONS
+    # ------------------------------------------------------- #
+
+    @staticmethod
+    def preprocessNPArray(path_list, data_id, set_name):
+
+        logging.info('WARNING: inputs or outputs with type "id" will not be treated in any way by the dataset.')
+        if isinstance(path_list, str) and os.path.isfile(path_list):  # path to list of IDs
+            data = []
+            import numpy as np
+            array = np.load(path_list)
+            data = array
+        elif isinstance(path_list, list):
+            data = path_list
+        else:
+            raise Exception('Wrong type for "path_list". '
+                            'It must be a path to a text file with an data_id in each line'
+                            ' or an instance of the class list with an data_id in each position.'
+                            'It currently is: %s' % str(path_list))
+
+        return data
+
+
+
+
 
     # ------------------------------------------------------- #
     #       TYPE 'id' SPECIFIC FUNCTIONS
